@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Pico W Analog Controller</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f3f3;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 400px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        input[type=range] {
+            width: 100%;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type=submit] {
+            background: #007acc;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        input[type=submit]:hover {
+            background: #005fa3;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Pico W Analog Output Control</h1>
+        <p><strong>Analog Input Voltage:</strong> {{ADC_VAL}} V</p>
+        <form method="GET">
+            <div class="form-group">
+                <label for="mode">Select Output Mode:</label>
+                <input type="radio" id="voltage" name="mode" value="voltage" {{VOL_CHECKED}}>
+                <label for="voltage">0-10V</label><br>
+                <input type="radio" id="current" name="mode" value="current" {{CURR_CHECKED}}>
+                <label for="current">4-20mA</label>
+            </div>
+            <div class="form-group">
+                <label for="val">Output Level (0-100):</label>
+                <input type="range" id="val" name="val" min="0" max="100" value="{{VAL}}">
+            </div>
+            <input type="submit" value="Set Output">
+        </form>
+    </div>
+</body>
+</html>
