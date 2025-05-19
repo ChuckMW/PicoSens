@@ -1,7 +1,7 @@
 import network
 import socket
 import time
-from machine import Pin  # Import the Pin class to control the LED
+from machine import Pin, ADC  # Import ADC class to read from analog pins
 
 # ====== Access Point Configuration ======
 SSID = 'PicoSens'
@@ -12,8 +12,11 @@ ap = network.WLAN(network.AP_IF)
 ap.config(essid=SSID, password=PASSWORD)
 ap.active(True)
 
-# Setup the LED pin (assuming GPIO pin 25 is used for the LED)
-led = Pin(25, Pin.OUT)
+# ✅ Use correct onboard LED pin for Pico W
+led = Pin("LED", Pin.OUT)
+
+# Create an ADC object to read from GPIO 26 (Analog pin)
+adc = ADC(26)  # GPIO 26 for analog sensor input
 
 # Function to blink the LED for a given duration
 def blink_led(duration, status="ON"):
@@ -24,19 +27,67 @@ def blink_led(duration, status="ON"):
     time.sleep(duration)
     led.off()  # Turn off the LED after the blink
 
-print("Starting Access Point...")
-while ap.active() == False:
-    blink_led(0.5, status="ON")  # Blink LED while waiting for AP to become active
-    print("Waiting for AP to be active...")
+# Function to read sensor data and scale it
+def read_sensor():
+    # Read the analog value from the sensor (0-65535)
+    raw_value = adc.read_u16()
 
-print("AP Active!")
-print("Network config:", ap.ifconfig())
+    # Scale the value to a range (e.g., 0 to 3.3V)
+    voltage = (raw_value / 65535) * 3.3  # Convert to voltage
 
-# Blink the LED once when the AP is active
-blink_led(1, status="ON")
-time.sleep(1)  # Wait for a second to give a clear blink indication
+    # You can modify this part to scale it for your sensor, e.g., temperature
+    # For now, we just return the voltage value
+    return voltage
 
-# ====== Simple Web Page HTML ======
+# ====== Web Server Function ======
+def serve():
+    addr = socket.getaddrinfo('0.0.0.0', 80)[0][-1]
+    s = socket.socket()
+    s.bind(addr)
+    s.listen(1)
+    print('Listening on', addr)
+
+    while True:
+        try:
+            cl, addr = s.accept()
+            print('Client connected from', addr)
+            request = cl.recv(1024).decode()
+
+            # Blink LED to indicate activity
+            blink_led(0.1, status="ON")
+
+            # Serve the embedded HTML page if the request is for '/'
+            if "GET /" in request:
+                print("Serving embedded HTML page")
+                blink_led(0.1, status="ON")
+                cl.send('HTTP/1.0 200 OK\r\nContent-Type: text/html\r\n\r\n')
+                cl.send(html_content)
+
+            # Serve the sensor data as JSON if the request is for '/data'
+            elif "GET /data" in request:
+                print("Serving sensor data")
+                blink_led(0.1, status="ON")
+
+                # Read sensor value
+                sensor_value = read_sensor()
+
+                # Send the sensor data as a JSON response
+                data = '{"value": ' + str(sensor_value) + '}\n'
+                cl.send('HTTP/1.0 200 OK\r\nContent-Type: application/json\r\n\r\n')
+                cl.send(data)
+
+            else:
+                print("404 Not Found")
+                blink_led(0.3)
+                cl.send('HTTP/1.0 404 Not Found\r\n\r\n')
+
+            cl.close()
+
+        except Exception as e:
+            print("Error:", e)
+            cl.close()
+
+# ====== HTML Page ======
 html_content = """
 <!DOCTYPE html>
 <html lang="en">
@@ -267,38 +318,17 @@ html_content = """
 </html>
 """
 
-# ====== Web Server Function ======
-def serve():
-    addr = socket.getaddrinfo('0.0.0.0', 80)[0][-1]
-    s = socket.socket()
-    s.bind(addr)
-    s.listen(1)
-    print('Listening on', addr)
+# Startup sequence
+print("Starting Access Point...")
+while not ap.active():
+    blink_led(0.5)
+    print("Waiting for AP to be active...")
 
-    while True:
-        try:
-            cl, addr = s.accept()
-            print('Client connected from', addr)
-            request = cl.recv(1024).decode()
+print("AP Active!")
+print("Network config:", ap.ifconfig())
 
-            # Blink LED to indicate activity
-            blink_led(0.1, status="ON")
-
-            # Serve the embedded HTML page if the request is for '/'
-            if "GET /" in request:
-                print("Serving embedded HTML page")
-
-                # Send the embedded HTML content
-                cl.send('HTTP/1.0 200 OK\r\nContent-Type: text/html\r\n\r\n')
-                cl.send(html_content)
-
-            else:
-                cl.send('HTTP/1.0 404 Not Found\r\n\r\n')
-
-            cl.close()
-        except Exception as e:
-            print("Error:", e)
-            cl.close()
+# Blink once when AP is ready
+blink_led(1)
 
 # Start the web server
 serve()
