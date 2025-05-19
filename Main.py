@@ -15,7 +15,7 @@ ap.config(essid=SSID, password=PASSWORD)
 ap.active(True)
 
 # Setup the LED pin (assuming GPIO pin 2 is used for the LED)
-led = Pin(2, Pin.OUT)
+led = Pin(25, Pin.OUT)
 
 # Function to blink the LED for a given duration
 def blink_led(duration, status="ON"):
