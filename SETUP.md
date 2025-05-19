@@ -79,4 +79,4 @@ If you want to keep your HTML separate from the Python script, you can store it 
 2. Connect to the network:
    - **SSID:** `PicoSens`
    - **Password:** `pico1234`
-3. Open a browser and go to:
+3. Open a browser and go to: 192.168.4.1
