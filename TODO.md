@@ -17,3 +17,6 @@
 - Mesh network settings from webserver
 - Add more menus and pages to webserver
 - Ping response time on webserver from the client to Pi
+-channel naming in webserver
+-update config.json to have all configurable details of system
+-streamline for performance 
