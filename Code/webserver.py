@@ -1,6 +1,6 @@
 import socket
 import json
-from sensors import read_sensors, check_thresholds
+from Code.sensors import read_sensors, check_thresholds
 from digital_io import read_digital_inputs, digital_outputs, set_digital_output
 from machine import Pin
 import ure
@@ -8,48 +8,65 @@ import time
 
 led = Pin("LED", Pin.OUT)
 
-html_content =""" 
+html_content = """ 
 <!DOCTYPE html>
 <html>
 <head>
 <title>Pico Multi-Sensor + Digital I/O</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    body { font-family: 'Arial', sans-serif; margin: 20px; background: #f5f5f5; color: #333; }
+    h1 { color: #007acc; }
+    h2 { color: #005fa3; margin-top: 30px; }
+    div.section { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);}
+    span.status-dot { display:inline-block; width:12px; height:12px; border-radius:50%; background:red; vertical-align:middle; margin-left:5px; }
+    button { margin: 3px 3px 3px 0; padding:5px 10px; border:none; border-radius:5px; background:#007acc; color:#fff; cursor:pointer; }
+    button:hover { background:#005fa3; }
+    input { width:70px; padding:3px; border:1px solid #ccc; border-radius:4px; }
+    canvas { border:1px solid #ccc; border-radius:6px; background:#fff; display:block; margin-top:15px; }
+</style>
 </head>
-<body style="font-family:Arial; padding:20px;">
-<h1>PicoSense</h1>
+<body>
+<h1>PicoSense Dashboard</h1>
 
-<div>Sensor 1: <span id="s1">--</span> V</div>
-<div>Sensor 2: <span id="s2">--</span> V</div>
-<div>Sensor 3: <span id="s3">--</span> V</div>
-
-<hr>
-<h2>Digital Inputs</h2>
-<div>DIN0: <span id="din0">--</span></div>
-<div>DIN1: <span id="din1">--</span></div>
-
-<h2>Digital Outputs</h2>
-<button onclick="setOut(0,1)">DOUT0 ON</button>
-<button onclick="setOut(0,0)">DOUT0 OFF</button><br>
-<button onclick="setOut(1,1)">DOUT1 ON</button>
-<button onclick="setOut(1,0)">DOUT1 OFF</button>
-<div>DOUT0: <span id="dout0">--</span></div>
-<div>DOUT1: <span id="dout1">--</span></div>
-
-<hr>
-<div>
-Update Interval (ms):
-<input type="number" id="intervalInput" value="2000" min="200" step="200">
-<button onclick="applyInterval()">Apply</button>
+<div class="section">
+  <strong>Connection Status:</strong> 
+  <span id="connStatus" class="status-dot"></span>
 </div>
 
-<div style="margin-top:10px;">
-Graph Max Voltage (Y Scale):
-<input type="number" id="scaleInput" value="3.3" min="1" step="0.1">
-<button onclick="applyScale()">Apply</button>
+<div class="section">
+  <strong>Sensor Voltages (V):</strong><br>
+  Sensor 1: <span id="s1">--</span><br>
+  Sensor 2: <span id="s2">--</span><br>
+  Sensor 3: <span id="s3">--</span>
 </div>
 
-<hr>
-<canvas id="graph" width="700" height="400" style="border:1px solid #ccc;"></canvas>
+<div class="section">
+  <h2>Digital Inputs</h2>
+  DIN0: <span id="din0">--</span><br>
+  DIN1: <span id="din1">--</span>
+</div>
+
+<div class="section">
+  <h2>Digital Outputs</h2>
+  <button onclick="setOut(0,1)">DOUT0 ON</button>
+  <button onclick="setOut(0,0)">DOUT0 OFF</button><br>
+  <button onclick="setOut(1,1)">DOUT1 ON</button>
+  <button onclick="setOut(1,0)">DOUT1 OFF</button><br>
+  DOUT0: <span id="dout0">--</span><br>
+  DOUT1: <span id="dout1">--</span>
+</div>
+
+<div class="section">
+  <strong>Update Interval (ms):</strong>
+  <input type="number" id="intervalInput" value="2000" min="200" step="200">
+  <button onclick="applyInterval()">Apply</button><br><br>
+  <strong>Graph Max Voltage (Y Scale):</strong>
+  <input type="number" id="scaleInput" value="3.3" min="1" step="0.1">
+  <button onclick="applyScale()">Apply</button>
+</div>
+
+<canvas id="graph" width="700" height="400"></canvas>
 
 <script>
 const canvas = document.getElementById("graph");
@@ -61,10 +78,14 @@ let timer;
 const maxPoints = 100;
 let data1=[], data2=[], data3=[], din0Data=[], din1Data=[], dout0Data=[], dout1Data=[];
 
-function applyInterval() { updateInterval=parseInt(document.getElementById("intervalInput").value); clearInterval(timer); timer=setInterval(update, updateInterval);}
-function applyScale() { graphScale=parseFloat(document.getElementById("scaleInput").value); }
+function applyInterval() { 
+    updateInterval = parseInt(document.getElementById("intervalInput").value); 
+    clearInterval(timer); 
+    timer = setInterval(update, updateInterval);
+}
+function applyScale() { graphScale = parseFloat(document.getElementById("scaleInput").value); }
 
-function drawGrid() {
+function drawGrid(){
     ctx.strokeStyle="#eee"; ctx.font="12px Arial"; ctx.fillStyle="#000";
     for(let i=0;i<=10;i++){
         let y=(i/10)*canvas.height;
@@ -107,41 +128,67 @@ function drawGraph(){
     drawDigital(dout0Data,"brown",60); drawDigital(dout1Data,"black",80);
 }
 
+// Connection status indicator
+let statusDot = document.getElementById("connStatus");
+let success = true;          // current connection state
+let greenToggle = false;     // toggle between two greens
+
+function updateConnectionIndicator(isConnected) {
+    success = isConnected;
+    if (!success) {
+        statusDot.style.backgroundColor = "red";
+    }
+}
+
+// Alternate two greens every 1 second when connected
+setInterval(() => {
+    if (success) {
+        greenToggle = !greenToggle;
+        statusDot.style.backgroundColor = greenToggle ? "#00cc00" : "#009900"; // light green / dark green
+    }
+}, 1000);
+
+
 async function update(){
     try{
-        const res=await fetch('/data'); const d=await res.json();
-        const v1=d.sensor1.voltage, v2=d.sensor2.voltage, v3=d.sensor3.voltage;
-        document.getElementById('s1').textContent=v1.toFixed(3);
-        document.getElementById('s2').textContent=v2.toFixed(3);
-        document.getElementById('s3').textContent=v3.toFixed(3);
-        document.getElementById('din0').textContent=d.din0;
-        document.getElementById('din1').textContent=d.din1;
-        document.getElementById('dout0').textContent=d.dout0;
-        document.getElementById('dout1').textContent=d.dout1;
+        const res = await fetch('/data'); 
+        const d = await res.json();
 
-        data1.push(v1); data2.push(v2); data3.push(v3);
+        document.getElementById('s1').textContent = d.sensor1.voltage.toFixed(3);
+        document.getElementById('s2').textContent = d.sensor2.voltage.toFixed(3);
+        document.getElementById('s3').textContent = d.sensor3.voltage.toFixed(3);
+        document.getElementById('din0').textContent = d.din0;
+        document.getElementById('din1').textContent = d.din1;
+        document.getElementById('dout0').textContent = d.dout0;
+        document.getElementById('dout1').textContent = d.dout1;
+
+        data1.push(d.sensor1.voltage); data2.push(d.sensor2.voltage); data3.push(d.sensor3.voltage);
         din0Data.push(d.din0); din1Data.push(d.din1);
         dout0Data.push(d.dout0); dout1Data.push(d.dout1);
 
-        if(data1.length>maxPoints){
+        if(data1.length > maxPoints){
             data1.shift(); data2.shift(); data3.shift();
             din0Data.shift(); din1Data.shift();
             dout0Data.shift(); dout1Data.shift();
         }
 
         drawGraph();
-    }catch(e){console.log("Fetch error:",e);}
+        updateConnectionIndicator(true);
+    }catch(e){
+        console.log("Fetch error:", e);
+        updateConnectionIndicator(false);
+    }
 }
 
 async function setOut(index,value){ await fetch(`/digital?out${index}=${value}`); update(); }
 
-timer=setInterval(update,updateInterval); update();
+timer = setInterval(update, updateInterval); 
+update();
 </script>
 
 </body>
 </html>
 """
-
 
 def blink_led(duration=0.05):
     led.on()
@@ -200,34 +247,3 @@ def serve():
         except Exception as e:
             print("Server error:", e)
             cl.close()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -1,8 +1,8 @@
 import time
 from network_ap import start_ap
-from sensors import init_sensors
+from Code.sensors import init_sensors
 from digital_io import init_digital
-from webserver import serve
+from Code.webserver import serve
 
 # ====== Startup sequence ======
 start_ap()         # Bring up AP
