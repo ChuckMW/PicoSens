@@ -28,19 +28,3 @@ This guide walks you through setting up a **Raspberry Pi Pico W** as a **wireles
 | Dashboard URL | `http://192.168.4.1` |
 
 ---
-
-## 📁 Files
-
-### 1. `main.py`
-
-This is the main MicroPython script you need to upload and run on the Pico W. It:
-
-- Starts a Wi-Fi access point
-- Serves a local HTML dashboard
-- Simulates sensor readings and returns them via a `/data` endpoint
-
-### 2. `dashboard.html` (optional)
-
-If you want to keep your HTML separate from the Python script, you can store it in a file and load it dynamically. However, in the default setup, the HTML is embedded directly inside `main.py`.
-
----
