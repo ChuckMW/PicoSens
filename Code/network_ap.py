@@ -1,35 +1,34 @@
 import network
-from machine import Pin
 import time
+from machine import Pin
+from config import load_config
+from debug import log
 
 led = Pin("LED", Pin.OUT)
 
 def start_ap():
-    SSID = "PicoSens"
-    PASSWORD = "pico1234"
+    log("Starting AP initialization...")
+    cfg = load_config()
+    SSID = cfg["wifi"]["ssid"]
+    PASSWORD = cfg["wifi"]["password"]
 
-    # Initialize Access Point
+    log("AP SSID: " + SSID)
+    log("AP Password: " + PASSWORD)
+
     ap = network.WLAN(network.AP_IF)
     ap.config(essid=SSID, password=PASSWORD)
     ap.active(True)
 
-    # Optionally set static IP/subnet (DHCP server still works)
     ap.ifconfig(('192.168.4.1', '255.255.255.0', '192.168.4.1', '8.8.8.8'))
+    log("AP ifconfig set")
 
-    print("Starting AP...")
-    # Blink LED while AP is activating
     while not ap.active():
+        log("Waiting for AP to activate...")
         led.on()
-        time.sleep(0.3)
+        time.sleep(0.2)
         led.off()
+        time.sleep(0.2)
 
-    led.off()
-    print("AP Active:", ap.ifconfig())
-    print("DHCP server running for connected clients")
+    log("AP Active: " + str(ap.ifconfig()))
     return ap
-
-# Example usage
-if __name__ == "__main__":
-    ap = start_ap()
-    # AP is now running and clients can connect via DHCP
 

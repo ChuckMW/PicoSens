@@ -11,10 +11,9 @@
 - Add 0-10V (Hardware)
 - Add signal scaling
 - Change network settings from webserver AND add ability to connect to wirless network instead of serving one
-- Reboot from webserver
+- Remote code/firmware changes
 - Module status from webserver
 - Test lights from webserver
-- Change SSID and password from webserver
 - Mesh network settings from webserver
 - Add more menus and pages to webserver
 - Ping response time on webserver from the client to Pi
