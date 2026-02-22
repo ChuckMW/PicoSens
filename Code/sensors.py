@@ -35,3 +35,4 @@ def check_thresholds(data):
 
 def init_sensors():
     print("Sensors initialized")
+

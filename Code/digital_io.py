@@ -17,3 +17,4 @@ def set_digital_output(index, value):
 
 def init_digital():
     print("Digital I/O initialized")
+

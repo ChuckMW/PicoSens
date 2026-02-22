@@ -14,7 +14,7 @@ def start_ap():
     ap.active(True)
 
     # Optionally set static IP/subnet (DHCP server still works)
-    ap.ifconfig(('192.168.4.1', '255.255.255.0', '192.168.4.1', '255.255.255.0'))
+    ap.ifconfig(('192.168.4.1', '255.255.255.0', '192.168.4.1', '8.8.8.8'))
 
     print("Starting AP...")
     # Blink LED while AP is activating
@@ -32,3 +32,4 @@ def start_ap():
 if __name__ == "__main__":
     ap = start_ap()
     # AP is now running and clients can connect via DHCP
+

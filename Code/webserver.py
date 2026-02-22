@@ -1,10 +1,11 @@
 import socket
 import json
-from Code.sensors import read_sensors, check_thresholds
+from sensors import read_sensors, check_thresholds
 from digital_io import read_digital_inputs, digital_outputs, set_digital_output
 from machine import Pin
 import ure
 import time
+
 
 led = Pin("LED", Pin.OUT)
 
@@ -198,9 +199,11 @@ def blink_led(duration=0.05):
 def serve():
     addr = socket.getaddrinfo('0.0.0.0',80)[0][-1]
     s = socket.socket()
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.bind(addr)
     s.listen(1)
     print("Server listening on", addr)
+
 
     while True:
         try:
@@ -247,3 +250,4 @@ def serve():
         except Exception as e:
             print("Server error:", e)
             cl.close()
+
