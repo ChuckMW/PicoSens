@@ -1,4 +1,0 @@
-{
-  "value": 12.5,         // Raw mA or ADC-based value
-  "timestamp": "12:45"   // Optional: or let JS generate one
-}
