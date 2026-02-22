@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Graphs - PicoSense</title>
+<style>
+body{font-family:Arial;background:#f5f5f5;margin:10px;}
+h1{color:#007acc;}
+.section{background:#fff;padding:10px;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.1);margin-bottom:10px;}
+button{padding:5px 10px;border:none;border-radius:4px;background:#007acc;color:#fff;cursor:pointer;}
+button:hover{background:#005fa3;}
+input{padding:5px;margin:5px 0;border-radius:4px;border:1px solid #ccc;width:80px;}
+</style>
+</head>
+<body>
+<h1>Sensor Graphs</h1>
+
+<div class="section">
+<h3>Graph Settings</h3>
+Update Interval (ms): <input id="iv" type="number" value="2000" min="200" step="200">
+Max Voltage (V): <input id="sc" type="number" value="3.3" min="0.5" step="0.1">
+<button onclick="applySettings()">Apply</button>
+</div>
+
+<canvas id="g" width="500" height="250" style="border:1px solid #ccc;"></canvas>
+<button onclick="location.href='/'">Back to Dashboard</button>
+
+<script>
+var c=document.getElementById("g"),x=c.getContext("2d");
+var d1=[],d2=[],d3=[],mp=100; // max points
+var updateInterval=2000, maxV=3.3, t=null;
+
+function applySettings(){
+    updateInterval=parseInt(document.getElementById("iv").value)||2000;
+    maxV=parseFloat(document.getElementById("sc").value)||3.3;
+    clearInterval(t);
+    t=setInterval(updateData, updateInterval);
+}
+
+async function updateData(){
+    try{
+        let res=await fetch("/data");
+        let j=await res.json();
+        d1.push(j.s1); d2.push(j.s2); d3.push(j.s3);
+        if(d1.length>mp){ d1.shift(); d2.shift(); d3.shift(); }
+        drawGraph();
+    }catch(e){
+        console.log("Failed to fetch data",e);
+    }
+}
+
+function drawGraph(){
+    x.clearRect(0,0,c.width,c.height);
+
+    // Draw grid and axes
+    x.strokeStyle="#ccc"; x.fillStyle="#000"; x.font="10px Arial";
+    // horizontal lines
+    for(var i=0;i<=5;i++){
+        let y=i*c.height/5;
+        x.beginPath(); x.moveTo(40,y); x.lineTo(c.width,y); x.stroke();
+        x.fillText((maxV*(5-i)/5).toFixed(1)+"V", 0, y+3);
+    }
+    // vertical lines and X-axis labels
+    for(var i=0;i<=10;i++){
+        let xPos=40 + i*(c.width-40)/10;
+        x.beginPath(); x.moveTo(xPos,0); x.lineTo(xPos,c.height); x.stroke();
+        x.fillText(-(10-i)*updateInterval/1000+"s", xPos-10,c.height-2);
+    }
+
+    // Draw sensor lines
+    function ln(d,col){
+        if(!d.length) return;
+        x.beginPath(); x.strokeStyle=col;
+        for(var i=0;i<d.length;i++){
+            let xx=40 + i*(c.width-40)/mp;
+            let yy=c.height - (d[i]/maxV)*c.height;
+            if(i==0) x.moveTo(xx,yy); else x.lineTo(xx,yy);
+        }
+        x.stroke();
+    }
+    ln(d1,"red"); ln(d2,"green"); ln(d3,"blue");
+
+    // Labels
+    x.fillStyle="#000"; x.font="12px Arial";
+    x.fillText("Voltage (V)", 0,12);
+    x.fillText("Time (s)", c.width-50,c.height-5);
+}
+
+t=setInterval(updateData, updateInterval);
+updateData();
+</script>
+</body>
+</html>

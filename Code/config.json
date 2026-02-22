@@ -1,1 +1,0 @@
-{"wifi": {"ssid": "PicoSens", "password": "pico1234567"}, "sensors": {"calibration": [{"offset": 0.0, "scale": 1.0}, {"offset": 0.0, "scale": 1.0}, {"offset": 0.0, "scale": 1.0}], "threshold_low": [0.5, 0.5, 0.5], "threshold_high": [2.5, 2.5, 2.5]}, "digital": {"output_default": [0, 0]}}

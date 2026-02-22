@@ -1,0 +1,32 @@
+{
+  "wifi": {
+    "ssid": "PicoSens",
+    "password": "pico12345"
+  },
+  "auth": {
+    "username": "admin",
+    "password": "admin123"
+  },
+  "mqtt": {
+    "enabled": true,
+    "broker": "192.168.4.2",
+    "port": 1883,
+    "client_id": "picosense01",
+    "topic": "picosense/data"
+  },
+  "sensors": {
+    "calibration": [
+      {"offset": 0.0, "scale": 1.0},
+      {"offset": 0.0, "scale": 1.0},
+      {"offset": 0.0, "scale": 1.0}
+    ],
+    "threshold_low": [0.5, 0.5, 0.5],
+    "threshold_high": [2.5, 2.5, 2.5]
+  },
+  "digital": {
+    "output_default": [0, 0]
+  }
+}
+
+
+

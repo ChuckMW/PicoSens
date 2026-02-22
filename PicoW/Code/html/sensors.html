@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Sensors - PicoSense</title>
+<style>
+body{font-family:Arial;background:#f5f5f5;margin:10px;}
+h1{color:#007acc;}
+.section{background:#fff;padding:10px;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.1);}
+button{padding:5px 10px;border:none;border-radius:4px;background:#007acc;color:#fff;cursor:pointer;}
+button:hover{background:#005fa3;}
+</style>
+</head>
+<body>
+<h1>Sensors</h1>
+<div class="section">
+<strong>Status:</strong> <span id="cs">--</span><br>
+S1: <span id="s1">--</span> V<br>
+S2: <span id="s2">--</span> V<br>
+S3: <span id="s3">--</span> V
+</div>
+<button onclick="location.href='/'">Back to Dashboard</button>
+
+<script>
+function up(){
+    fetch("/data").then(r=>r.json()).then(j=>{
+        document.getElementById("s1").textContent=j.s1.toFixed(3);
+        document.getElementById("s2").textContent=j.s2.toFixed(3);
+        document.getElementById("s3").textContent=j.s3.toFixed(3);
+        document.getElementById("cs").textContent="OK";
+    }).catch(e=>{
+        document.getElementById("cs").textContent="Error";
+    });
+}
+setInterval(up,2000); up();
+</script>
+</body>
+</html>

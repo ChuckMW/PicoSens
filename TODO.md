@@ -2,9 +2,8 @@
 
 - Temp and humidity
 - Any built in Pi sensors
-- Add mesh networkability
+- Add mesh networkability/ single LAN
 - Add MQTT
-- Add OPCUA
 - Add battery capabilities(Hardware)
 - Add 4-20mA (Hardware)
 - Add 24V supply (Hardware)
@@ -17,3 +16,12 @@
 - Mesh network settings from webserver
 - Add more menus and pages to webserver
 - Ping response time on webserver from the client to Pi
+- Optimize it for industrial reliability
+
+
+- Add WebSocket instead of polling
+- add logging.html and mqtt.html
+
+
+
+- Turn this into a small commercial IoT firmware???

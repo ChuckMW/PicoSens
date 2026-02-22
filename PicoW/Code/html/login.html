@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>PicoSense Login</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f5f5f5;margin:0;padding:0;}
+.container{width:300px;margin:100px auto;padding:20px;background:#fff;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.1);}
+input{width:100%;padding:8px;margin:5px 0;border-radius:4px;border:1px solid #ccc;}
+button{width:100%;padding:8px;margin:10px 0;background:#007acc;color:white;border:none;border-radius:4px;cursor:pointer;}
+button:hover{background:#005fa3;}
+h2{text-align:center;color:#007acc;}
+</style>
+</head>
+<body>
+<div class="container">
+<h2>PicoSense Login</h2>
+<form action="/dologin" method="post">
+<input type="text" name="u" placeholder="Username" required><br>
+<input type="password" name="p" placeholder="Password" required><br>
+<button type="submit">Login</button>
+</form>
+</div>
+</body>
+</html>
